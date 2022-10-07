@@ -32,7 +32,7 @@ export default function Home() {
             },
         }
         //Now on success, once we send this transaction after the approve goes through
-        //we are going to want to call the list function underneath
+        //we are going to want to call the list function underneath.
         await runContractFunction({
             params: approveOptions,
             onSuccess: () => handleApproveSuccess(nftAddress, tokenId, price),
