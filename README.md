@@ -1,6 +1,7 @@
 
 1. Home Page >> INDEX.JS
 1. Show recently listed NFTS
+
 a. If you own the NFTS, You can update the listings
 b. If not, you can buy the listings
 
