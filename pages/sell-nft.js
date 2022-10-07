@@ -31,7 +31,8 @@ export default function Home() {
                 tokenId: tokenId,
             },
         }
-
+        //Now on success, once we send this transaction after the approve goes through
+        //we are going to want to call the list function underneath
         await runContractFunction({
             params: approveOptions,
             onSuccess: () => handleApproveSuccess(nftAddress, tokenId, price),
@@ -98,7 +99,7 @@ export default function Home() {
     }
 
     useEffect(() => {
-        if(isWeb3Enabled){
+        if (isWeb3Enabled) {
             setupUI()
         }
     }, [proceeds, account, isWeb3Enabled, chainId])
