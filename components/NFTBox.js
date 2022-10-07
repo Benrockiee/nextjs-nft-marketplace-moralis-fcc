@@ -1,9 +1,13 @@
+//We need useState to keep track of that image URI so we import it from react like this:
 import { useState, useEffect } from "react"
 import { useWeb3Contract, useMoralis } from "react-moralis"
+//we import these abis after updating our front end from the backend
 import nftMarketplaceAbi from "../constants/NftMarketplace.json"
 import nftAbi from "../constants/BasicNft.json"
 import Image from "next/image"
+//we import this card from web3uikit so we can make these little clickable
 import { Card, useNotification } from "web3uikit"
+//we imported this ethers here because of that NFT Price thing to make it human readable
 import { ethers } from "ethers"
 import UpdateListingModal from "./UpdateListingModal"
 
@@ -26,6 +30,7 @@ export default function NFTBox({ price, nftAddress, tokenId, marketplaceAddress,
     const { isWeb3Enabled, account } = useMoralis()
     const [imageURI, setImageURI] = useState("")
     const [tokenName, setTokenName] = useState("")
+    //lets grab the description anad the title of the tokenUI as a state variable
     const [tokenDescription, setTokenDescription] = useState("")
     const [showModal, setShowModal] = useState(false)
     const hideModal = () => setShowModal(false)
@@ -52,16 +57,24 @@ export default function NFTBox({ price, nftAddress, tokenId, marketplaceAddress,
     })
 
     async function updateUI() {
+        //we need to first get the tokenURI
+        // using the image tag from the tokenURI, get the image
         const tokenURI = await getTokenURI()
         console.log(`The TokenURI is ${tokenURI}`)
-        // We are going to cheat a little here...
+        // We are going to cheat a little here... We are grabbing this URI to get that image from it
         if (tokenURI) {
+            //Not every browser is IPFS compatible so we change the tokenURI from its eddition to a "https" edition
+            //and this is known as using an IPFS gateway
             // IPFS Gateway: A server that will return IPFS files from a "normal" URL.
             const requestURL = tokenURI.replace("ipfs://", "https://ipfs.io/ipfs/")
+            //we await to get the response and we await to convert it to json, thats how we get the response
             const tokenURIResponse = await (await fetch(requestURL)).json()
             const imageURI = tokenURIResponse.image
+            //set image uri to image url
             const imageURIURL = imageURI.replace("ipfs://", "https://ipfs.io/ipfs/")
             setImageURI(imageURIURL)
+            //we come down here when we are done setting the description and the title of the tokenUI as a state variable above
+            //so we use go down and use this name and descriptions in our card.
             setTokenName(tokenURIResponse.name)
             setTokenDescription(tokenURIResponse.description)
             // We could render the Image on our sever, and just call our sever.
@@ -72,16 +85,17 @@ export default function NFTBox({ price, nftAddress, tokenId, marketplaceAddress,
         // get the tokenURI
         // using the image tag from the tokenURI, get the image
     }
-
+    //To make sure our updateUI is called, we make this useEffect
     useEffect(() => {
         if (isWeb3Enabled) {
             updateUI()
-        }
+        } //We only want this to run anytime web3 is enabled
     }, [isWeb3Enabled])
 
     const isOwnedByUser = seller === account || seller === undefined
     const formattedSellerAddress = isOwnedByUser ? "you" : truncateStr(seller || "", 15)
-
+    //This means if its owned by the user, have the modal pop up
+    //if not, we make the buy functionality and we do this by making another runContract function above.. (buy item)
     const handleCardClick = () => {
         isOwnedByUser
             ? setShowModal(true)
@@ -144,3 +158,18 @@ export default function NFTBox({ price, nftAddress, tokenId, marketplaceAddress,
         </div>
     )
 }
+//Because we used one image tag we saw on the  next/js docs and because of the optimizations it does for
+// us at the back end  we are not gonna be able to deploy this site to a static website like IPFS
+// because now our website requires a server technically because we have moralis.
+
+/* <Image
+  loader={() => imageURI}
+  src={imageURI}
+  height="200"
+  width="200"
+
+  If we do this right, it will dsiplay our image perfectly on our front end..
+  */
+
+/*and yes, instead of just showing that image thing, we wrap it in a card */
+
