@@ -16,7 +16,9 @@ export default function UpdateListingModal({
     const [priceToUpdateListingWith, setPriceToUpdateListingWith] = useState(0)
 
     const handleUpdateListingSuccess = async (tx) => {
+        //We want this transaction to go through first
         await tx.wait(1)
+        //before we can handle this dispatch
         dispatch({
             type: "success",
             message: "listing updated",
