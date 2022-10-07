@@ -3,6 +3,7 @@
 1. Show recently listed NFTS
 
 a. If you own the NFTS, You can update the listings
+
 b. If not, you can buy the listings
 
 2. Sell page
