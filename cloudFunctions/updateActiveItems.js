@@ -1,3 +1,11 @@
+//Create a new item called Active items
+//Add items when they are listed on the market place
+//Remove them when they are bought or canceled
+
+//This line means anytime something is listed in the itemListed tabble, we run an async function, anytime
+//an itemListed happens, we wanna add it to our active items List.
+//We only want to update active items when the transaction is confirmed..
+
 Moralis.Cloud.afterSave("ItemListed", async (request) => {
     const confirmed = request.object.get("confirmed")
     const logger = Moralis.Cloud.getLogger()
@@ -43,22 +51,40 @@ Moralis.Cloud.afterSave("ItemListed", async (request) => {
         await activeItem.save()
     }
 })
-
+//afterSave is called the trigger for our cloud function
 Moralis.Cloud.afterSave("ItemCanceled", async (request) => {
     const confirmed = request.object.get("confirmed")
     const logger = Moralis.Cloud.getLogger()
     logger.info(`Marketplace | Object: ${request.object}`)
     if (confirmed) {
+        //"itemListed" = if Active item exists, grab it, if it doesnt, create it
+        //"itemCanceled" = if this transaction is confirmed after one block, we remove it from active item
         const ActiveItem = Moralis.Object.extend("ActiveItem")
+        //"itemListed" = we now create a new entry in this active item that we are creating..
+        //"itemCanceled" = And we use query to first find out that active item that is being canceled
+        // or that is going to match the request here so we can cancel it
         const query = new Moralis.Query(ActiveItem)
+        //"itemListed" = we can set any of the columns we want for this new table that we are
+        // creating(in our database)  so we give it a marketplaceAddress Column and this will come from
+        // request.object.get("address"))
+        // ItemCanceled = we are looking for an active item where the marketPlaceAddress is going to be the same
+        //as the address of the item canceled so in essence, we are looking for the address of the seller, address
+        // of the marketPlace and tokenId, we dont need to look for the seller
+        // (input parameters for itemCanceled events)
         query.equalTo("marketplaceAddress", request.object.get("address"))
         query.equalTo("nftAddress", request.object.get("nftAddress"))
+        //we get the token id
         query.equalTo("tokenId", request.object.get("tokenId"))
+        //we print out this query that we are running
         logger.info(`Marketplace | Query: ${query}`)
+        //we are gonna find the first active item in the address and tokenId that just got canceled
         const canceledItem = await query.first()
+        //we print out the canceled item here
         logger.info(`Marketplace | CanceledItem: ${JSON.stringify(canceledItem)}`)
+        //if the query doesnt find anything, it will return undefined
         if (canceledItem) {
             logger.info(`Deleting ${canceledItem.id}`)
+            //we remove it from the active item
             await canceledItem.destroy()
             logger.info(
                 `Deleted item with tokenId ${request.object.get(
@@ -71,11 +97,12 @@ Moralis.Cloud.afterSave("ItemCanceled", async (request) => {
                     "address"
                 )} and tokenId: ${request.object.get("tokenId")} found.`
             )
-        }
-    }
-})
+        } //To test that this code is actually working, we go to our Nft MarketPlace backend and make a new script
+    } // called cancelItem (inside scripts folder)
+}) //Now we have a cloud function thats going to create a new entry and a new table
 
 Moralis.Cloud.afterSave("ItemBought", async (request) => {
+    //we get whether this transaction is confirmed
     const confirmed = request.object.get("confirmed")
     const logger = Moralis.Cloud.getLogger()
     logger.info(`Marketplace | Object: ${request.object}`)
@@ -107,3 +134,5 @@ Moralis.Cloud.afterSave("ItemBought", async (request) => {
         }
     }
 })
+//To test that this code is actually working, we go to our Nft MarketPlace backend again and make a new script
+// called buyItem (inside scripts folder)
