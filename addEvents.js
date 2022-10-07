@@ -3,6 +3,7 @@ require("dotenv").config()
 const contractAddresses = require("./constants/networkMapping.json")
 let chainId = process.env.chainId || 31337
 let moralisChainId = chainId == "31337" ? "1337" : chainId
+//contractAddresses at the chainId of the NftMarketPlace
 const contractAddressArray = contractAddresses[chainId]["NftMarketplace"]
 const contractAddress = contractAddressArray[contractAddressArray.length - 1]
 
@@ -125,7 +126,7 @@ async function main() {
         },
         tableName: "ItemCanceled",
     }
-
+    //Now to send them to our server, we do:
     const listedResponse = await Moralis.Cloud.run("watchContractEvent", itemListedOptions, {
         useMasterKey: true,
     })
